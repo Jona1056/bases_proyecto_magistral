@@ -1,4 +1,34 @@
 -- consulta 1
+SELECT      
+    e.nombre AS nombre_eleccion,
+    ae.año AS año_eleccion,
+    p.nombre AS nombre_pais,
+    ANY_VALUE(pa.nombre) AS nombre_partido,
+    MAX(porcentaje_votos.porcentaje) AS porcentaje_votos 
+FROM resultados r 
+INNER JOIN eleccion e ON r.eleccion_id_eleccion = e.id_eleccion 
+INNER JOIN año_eleccion ae ON r.año_eleccion_id_eleccion = ae.id_eleccion 
+INNER JOIN zona z ON r.zona_id_zona = z.id_zona 
+INNER JOIN pais p ON z.pais_id_pais = p.id_pais 
+INNER JOIN (     
+    SELECT          
+        z.pais_id_pais,
+        r.partido_id_partido,
+        (COUNT(r.id_resultado) / total_votos.total_votos) * 100 AS porcentaje     
+    FROM resultados r     
+    INNER JOIN zona z ON r.zona_id_zona = z.id_zona     
+    INNER JOIN (         
+        SELECT              
+            z.pais_id_pais,
+            COUNT(r.id_resultado) AS total_votos         
+        FROM resultados r         
+        INNER JOIN zona z ON r.zona_id_zona = z.id_zona         
+        GROUP BY z.pais_id_pais     
+    ) AS total_votos ON z.pais_id_pais = total_votos.pais_id_pais     
+    GROUP BY z.pais_id_pais, r.partido_id_partido 
+) AS porcentaje_votos ON p.id_pais = porcentaje_votos.pais_id_pais 
+INNER JOIN partido pa ON porcentaje_votos.partido_id_partido = pa.id_partido 
+GROUP BY e.nombre, ae.año, p.nombre;
 -- consulta 2
 SELECT 
     p.nombre AS nombre_pais,
