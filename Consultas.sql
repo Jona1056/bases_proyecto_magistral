@@ -110,3 +110,25 @@ INNER JOIN zona z ON c.id_caracteristicas = z.id_zona
 INNER JOIN pais p ON z.pais_id_pais = p.id_pais
 ORDER BY porcentaje_analfabetas DESC
 LIMIT 1;
+
+-- consulta 10
+SELECT 
+    d.nombre AS nombre_departamento,
+    COUNT(r.id_resultado) AS total_votos
+FROM resultados r
+INNER JOIN zona z ON r.zona_id_zona = z.id_zona
+INNER JOIN departamento d ON z.departamento_id_departamento = d.id_departamento
+INNER JOIN pais p ON z.pais_id_pais = p.id_pais
+WHERE p.nombre = 'Guatemala'
+GROUP BY d.nombre
+HAVING total_votos > (
+    SELECT 
+        COUNT(r2.id_resultado)
+    FROM resultados r2
+    INNER JOIN zona z2 ON r2.zona_id_zona = z2.id_zona
+    INNER JOIN departamento d2 ON z2.departamento_id_departamento = d2.id_departamento
+    INNER JOIN pais p2 ON z2.pais_id_pais = p2.id_pais
+    WHERE p2.nombre = 'Guatemala'
+    AND d2.nombre = 'Guatemala'
+)
+ORDER BY total_votos DESC;
